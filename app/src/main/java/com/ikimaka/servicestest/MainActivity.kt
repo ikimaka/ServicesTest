@@ -22,27 +22,8 @@ class MainActivity : AppCompatActivity() {
             startService(MyService.newIntent(this))
         }
         binding.foregroundService.setOnClickListener {
-            showNotification()
+            startForegroundService(MyForegroundService.newIntent(this))
         }
     }
 
-    private fun showNotification() {
-        val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
-        val notificationChannel = NotificationChannel(CHANNEL_ID, CHANNEL_NAME, NotificationManager.IMPORTANCE_DEFAULT)
-
-        notificationManager.createNotificationChannel(notificationChannel)
-
-        val notification = Notification.Builder(this, CHANNEL_ID)
-            .setContentTitle("Title")
-            .setContentText("Text")
-            .setSmallIcon(androidx.core.R.drawable.notification_bg)
-            .build()
-
-
-        notificationManager.notify(1, notification)
-    }
-    companion object {
-        private const val CHANNEL_ID = "channel_id"
-        private const val CHANNEL_NAME = "channel_name"
-    }
 }
