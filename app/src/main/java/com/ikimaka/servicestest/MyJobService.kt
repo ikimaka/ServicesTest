@@ -6,6 +6,7 @@ import android.app.job.JobService
 import android.content.Context
 import android.content.Intent
 import android.os.IBinder
+import android.os.PersistableBundle
 import android.util.Log
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -25,32 +26,45 @@ class MyJobService : JobService() {
     override fun onStartJob(params: JobParameters?): Boolean {
         log("onStartJob")
         coroutineScope.launch {
-            for (i in 0 until 10) {
-                delay(1000)
-                log("Timer $i")
+            var workItem = params?.dequeueWork()
+            while (workItem != null) {
+                val page = workItem.intent.getIntExtra(PAGE, 0)
+                for (i in 0 until 5) {
+                    delay(1000)
+                    log("Timer $i $page")
+                }
+                params?.completeWork(workItem)
+                workItem = params?.dequeueWork()
             }
-            jobFinished(params, true)
+            jobFinished(params, false)
         }
         return true
     }
 
-        override fun onStopJob(params: JobParameters?): Boolean {
-            log("onStopJob")
-            return true
-        }
+    override fun onStopJob(params: JobParameters?): Boolean {
+        log("onStopJob")
+        return true
+    }
 
-        override fun onDestroy() {
-            super.onDestroy()
-            coroutineScope.cancel()
-            log("onDestroy")
-        }
+    override fun onDestroy() {
+        super.onDestroy()
+        coroutineScope.cancel()
+        log("onDestroy")
+    }
 
 
-        private fun log(message: String) {
-            Log.d("SERVICE_TAG", "MyJobService: $message")
-        }
+    private fun log(message: String) {
+        Log.d("SERVICE_TAG", "MyJobService: $message")
+    }
 
     companion object {
         const val JOB_ID = 11
+        private const val PAGE = "page"
+
+        fun newIntent(page: Int): Intent {
+            return Intent().apply {
+                putExtra(PAGE, page)
+            }
+        }
     }
 }
