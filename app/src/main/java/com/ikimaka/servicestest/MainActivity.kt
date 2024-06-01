@@ -9,6 +9,8 @@ import android.app.job.JobWorkItem
 import android.content.ComponentName
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import androidx.work.ExistingWorkPolicy
+import androidx.work.WorkManager
 import com.ikimaka.servicestest.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity() {
@@ -47,6 +49,10 @@ class MainActivity : AppCompatActivity() {
         }
         binding.jobIntentService.setOnClickListener {
             MyJobIntentService.enqueue(this, page++)
+        }
+        binding.workManager.setOnClickListener {
+            val workManager = WorkManager.getInstance(applicationContext)
+            workManager.enqueueUniqueWork(MyWorker.WORK_NAME, ExistingWorkPolicy.APPEND, MyWorker.makeRequest(page++))
         }
     }
 
