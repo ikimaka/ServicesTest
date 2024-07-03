@@ -18,18 +18,31 @@ class MyForegroundService : Service() {
 
     private val coroutineScope = CoroutineScope(Dispatchers.Main)
 
+    private val notificationManager by lazy {
+        getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+    }
+
+
+    private val notificationBuilder by lazy {
+        createNotificationBuilder()
+    }
+
     override fun onCreate() {
         super.onCreate()
         log("onCreate")
         createNotificationChannel()
-        startForeground(NOTIFICATION_ID, createNotification())
+        startForeground(NOTIFICATION_ID, notificationBuilder.build())
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         log("onStartCommand")
         coroutineScope.launch {
-            for (i in 0 until 10) {
+            for (i in 0.. 100 step 5) {
                 delay(1000)
+                val notification = notificationBuilder
+                    .setProgress(100, i, false)
+                    .build()
+                notificationManager.notify(NOTIFICATION_ID, notification)
                 log("Timer $i")
             }
             stopSelf()
@@ -49,19 +62,19 @@ class MyForegroundService : Service() {
     }
 
     private fun createNotificationChannel() {
-        val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
-
         val notificationChannel = NotificationChannel(CHANNEL_ID, CHANNEL_NAME, NotificationManager.IMPORTANCE_DEFAULT)
 
         notificationManager.createNotificationChannel(notificationChannel)
     }
 
-    private fun createNotification(): Notification {
+    private fun createNotificationBuilder(): Notification.Builder {
         return Notification.Builder(this, CHANNEL_ID)
             .setContentTitle("Title")
             .setContentText("Text")
             .setSmallIcon(androidx.core.R.drawable.notification_bg)
-            .build()
+            .setProgress(100, 0, false)
+            .setOnlyAlertOnce(true)
+
     }
 
     private fun log(message: String) {
