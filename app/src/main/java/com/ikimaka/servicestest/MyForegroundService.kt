@@ -6,6 +6,7 @@ import android.app.NotificationManager
 import android.app.Service
 import android.content.Context
 import android.content.Intent
+import android.os.Binder
 import android.os.IBinder
 import android.util.Log
 import kotlinx.coroutines.CoroutineScope
@@ -22,10 +23,11 @@ class MyForegroundService : Service() {
         getSystemService(NOTIFICATION_SERVICE) as NotificationManager
     }
 
-
     private val notificationBuilder by lazy {
         createNotificationBuilder()
     }
+
+    var onProgressChanged: ((Int) -> Unit)? = null
 
     override fun onCreate() {
         super.onCreate()
@@ -43,6 +45,7 @@ class MyForegroundService : Service() {
                     .setProgress(100, i, false)
                     .build()
                 notificationManager.notify(NOTIFICATION_ID, notification)
+                onProgressChanged?.invoke(i)
                 log("Timer $i")
             }
             stopSelf()
@@ -57,8 +60,9 @@ class MyForegroundService : Service() {
         log("onDestroy")
     }
 
-    override fun onBind(intent: Intent?): IBinder? {
-        TODO("Not yet implemented")
+    override fun onBind(intent: Intent?): IBinder {
+        log("onBind")
+        return LocalBinder()
     }
 
     private fun createNotificationChannel() {
@@ -81,6 +85,10 @@ class MyForegroundService : Service() {
         Log.d("SERVICE_TAG", "MyForegroundService: $message")
     }
 
+
+    inner class LocalBinder: Binder() {
+        fun getService() = this@MyForegroundService
+    }
 
     companion object {
 
