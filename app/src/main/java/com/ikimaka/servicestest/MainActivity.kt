@@ -1,8 +1,10 @@
 package com.ikimaka.servicestest
 
+import android.app.AlarmManager
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.app.PendingIntent
 import android.app.job.JobInfo
 import android.app.job.JobScheduler
 import android.app.job.JobWorkItem
@@ -14,6 +16,7 @@ import android.os.IBinder
 import androidx.work.ExistingWorkPolicy
 import androidx.work.WorkManager
 import com.ikimaka.servicestest.databinding.ActivityMainBinding
+import java.util.Calendar
 
 class MainActivity : AppCompatActivity() {
 
@@ -68,6 +71,19 @@ class MainActivity : AppCompatActivity() {
         binding.workManager.setOnClickListener {
             val workManager = WorkManager.getInstance(applicationContext)
             workManager.enqueueUniqueWork(MyWorker.WORK_NAME, ExistingWorkPolicy.APPEND, MyWorker.makeRequest(page++))
+        }
+        binding.alarmManager.setOnClickListener {
+            val alarmManager = getSystemService(ALARM_SERVICE) as AlarmManager
+            val calendar = Calendar.getInstance()
+            calendar.add(Calendar.SECOND, 30)
+            val intent = AlarmReceiver.newIntent(this)
+            val pendingIntent = PendingIntent.getBroadcast(
+                this,
+                100,
+                intent,
+                PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+            )
+            alarmManager.setExact(AlarmManager.RTC_WAKEUP, calendar.timeInMillis, pendingIntent)
         }
     }
 
